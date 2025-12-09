@@ -1,37 +1,32 @@
 package com.gildedrose;
 
-import org.approvaltests.Approvals;
-import org.approvaltests.reporters.DiffReporter;
-import org.approvaltests.reporters.UseReporter;
+
+import org.approvaltests.combinations.CombinationApprovals;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 
-@UseReporter(DiffReporter.class)
 public class GildedRoseApprovalTest {
 
-    @Test
-    public void foo() {
+   @Test
+    void updateQualityForMultipleItems(){
+        String[] names = {"foo", "Aged Brie", "Backstage passes to a TAFKAL80ETC concert", "Sulfuras, Hand of Ragnaros"};
+        Integer[] qualities = {-5, -1, 0, 5, 49, 50, 51};
+        Integer[] sellIns = {-8,-1,8,1,5,6,8,10,11,12,15 };
 
-        Item[] items = new Item[]{new Item("foo", 0, 0)};
-        GildedRose app = new GildedRose(items);
-        app.updateQuality();
-
-        Approvals.verifyAll("Items", items);
+        //THEN 
+        CombinationApprovals.verifyAllCombinations(this::doUpdateQuality,
+                names, sellIns, qualities);
     }
 
-    @Test
-    public void thirtyDays() {
+    private String doUpdateQuality(String name, int sellIn, int quality) {
+        //GIVEN
+        Item[] items = new Item[]{new Item(name, sellIn, quality)};
+        GildedRose app = new GildedRose(items);
 
-        ByteArrayOutputStream fakeoutput = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(fakeoutput));
-        System.setIn(new ByteArrayInputStream("a\n".getBytes()));
+        //WHEN
+        app.updateQuality();
 
-        Program.main();
-        String output = fakeoutput.toString();
-
-        Approvals.verify(output);
+        //THEN
+        return app.items[0].toString();
     }
 }
